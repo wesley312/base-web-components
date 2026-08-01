@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>&lt;duration-input&gt; demo</title>
+    <style>
+      body {
+        max-width: 640px;
+        margin: auto;
+      }
+      pre {
+        background: #eee;
+        width: 100%;
+        overflow-x: auto;
+        padding: 1em;
+      }
+      code {
+        background: #eee;
+      }
+      iframe {
+        width: 100%;
+        border-style: none;
+      }
+    </style>
+    <script type="module" src="../src/DurationInput/DurationInput.js"></script>
+  </head>
+  <body>
+    <h1><code>&lt;duration-input&gt;</code></h1>
+    <p>
+      A custom input element that edits an ISO&nbsp;8601 duration
+      (<code>PnYnMnDTnHnMnS</code>) through separate numeric fields.
+    </p>
+
+    <h2>Basic Usage</h2>
+    <h3>Default Look</h3>
+    <p>This is what default look likes.</p>
+    <duration-input id="d1"></duration-input>
+    <p>Current value: <samp id="out1"></samp></p>
+
+    <h3>Input Attributes</h3>
+    <p>There are few attributes you may set:</p>
+    <ul>
+      <li>
+        <code>value</code>: Same as <code>value</code> attribute in
+        <code>&lt;input&gt;</code>.
+      </li>
+      <li>
+        <code>legend</code>: Set the content of legend, default to
+        <em>Duration</em>, only text is supported.
+      </li>
+    </ul>
+    <duration-input
+      id="d2"
+      value="P1Y2M3DT4H5M6.7S"
+      legend="Reminder repeats every"
+    ></duration-input>
+    <p>Current value: <samp id="out2"></samp></p>
+
+    <h3>Input Validation</h3>
+    <p>
+      Only <code>required</code> attribute is supported for validation. Other
+      than that, any positive integer can be inputted besides
+      <em>second</em> where any positive decimal number is accepted.
+      <code>checkValidity()</code> and <code>reportValidity()</code> methods
+      from <code>HTMLFormElement</code> interface are supported.
+    </p>
+    <duration-input id="d3" legend="Required example" required></duration-input>
+    <button id="check">checkValidity()</button>
+    <button id="report">reportValidity()</button>
+    <p id="out3"></p>
+
+    <h2>Localization (i18n)</h2>
+    <p>
+      Field labels come from <code>Intl.NumberFormat</code>'s own unit
+      translations, not a hardcoded dictionary, set <code>lang</code> and they
+      follow. Use the <code>labels</code> attribute only for manual overrides
+      (abbreviations, a locale Intl doesn't cover well, etc).
+    </p>
+
+    <duration-input
+      id="d3"
+      lang="fr"
+      legend="Se répète tous les"
+      value="P1DT2H"
+    ></duration-input>
+    <pre><code>&lt;!-- labels derived automatically from lang --&gt;
+&lt;duration-input lang="fr" legend="Se répète tous les"&gt;&lt;/duration-input&gt;</code></pre>
+
+    <duration-input
+      id="d4"
+      legend="Custom short labels"
+      labels='{"year":"yr","month":"mo","week":"wk","day":"d","hour":"h","minute":"m","second":"s"}'
+    ></duration-input>
+    <pre><code>&lt;!-- overrides default labels with custom labels --&gt;
+&lt;duration-input legend="Custom short labels"
+  labels='{"year":"yr","month":"mo","week":"wk","day":"d","hour":"h","minute":"m","second":"s"}'
+&gt;&lt;/duration-input&gt;</code></pre>
+
+    <h3>
+      Inherited from a parent (no <code>lang</code> on the element itself)
+    </h3>
+    <div lang="de">
+      <p style="margin: 4px 0; font-size: 0.85rem; color: #555">
+        &lt;div lang="de"&gt; ← locale lives here, not on &lt;duration-input&gt;
+      </p>
+      <duration-input id="d5" legend="Wiederholt sich alle"></duration-input>
+    </div>
+    <button id="toggle-parent-lang" style="margin-top: 8px">
+      Change parent lang to "es" dynamically
+    </button>
+
+    <pre><code>&lt;!-- also inherits from an ancestor's lang, e.g. &lt;html lang="de"&gt; or any wrapper --&gt;
+&lt;div lang="de"&gt;
+  &lt;duration-input legend="Wiederholt sich alle"&gt;&lt;/duration-input&gt;
+&lt;/div&gt;
+ 
+&lt;script&gt;
+  // also settable as properties
+  el.lang = 'de';
+&lt;/script&gt;</code></pre>
+
+    <h3>Text direction (RTL)</h3>
+    <p>
+      No <code>dir</code> needed — direction is inferred from the locale and the
+      whole field mirrors automatically.
+    </p>
+    <duration-input
+      id="d6"
+      lang="ar"
+      legend="يتكرر كل"
+      value="P1DT3H"
+    ></duration-input>
+
+    <p>
+      An explicit <code>dir</code> (on the element or an ancestor) always wins
+      over the inferred one:
+    </p>
+    <duration-input
+      id="d7"
+      lang="ar"
+      dir="ltr"
+      legend="يتكرر كل (forced ltr)"
+      value="P2D"
+    ></duration-input>
+
+    <pre><code>&lt;!-- direction auto-inferred as rtl from lang="ar" -- no dir attribute needed --&gt;
+&lt;duration-input lang="ar" legend="يتكرر كل"&gt;&lt;/duration-input&gt;
+ 
+&lt;!-- explicit dir always overrides the inferred one --&gt;
+&lt;duration-input lang="ar" dir="ltr" legend="forced ltr"&gt;&lt;/duration-input&gt;</code></pre>
+
+    <h2>Styling</h2>
+    <h3><code>part</code> name</h3>
+    <p>
+      Elements are exposed for styling using <code>part</code> names. You can
+      find the part names by hoverover each element below.
+    </p>
+    <fieldset title="fieldset">
+      <legend title="legend">Duration</legend>
+      <label title="label label-year">
+        <input
+          title="input input-year"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-year">year</span>
+      </label>
+      <label title="label label-month">
+        <input
+          title="input input-month"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-month">month</span>
+      </label>
+      <label title="label label-week">
+        <input
+          title="input input-week"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-week">week</span>
+      </label>
+      <label title="label label-day">
+        <input
+          title="input input-day"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-day">day</span>
+      </label>
+      <label title="label label-hour">
+        <input
+          title="input input-hour"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-hour">hour</span>
+      </label>
+      <label title="label label-minute">
+        <input
+          title="input input-minute"
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+        />
+        <span title="unit unit-minute">minute</span>
+      </label>
+      <label title="label label-second">
+        <input
+          title="input input-second"
+          type="number"
+          min="0"
+          step="any"
+          inputmode="decimal"
+        />
+        <span title="unit unit-second">second</span>
+      </label>
+    </fieldset>
+
+    <h3>Styling using <code>::part()</code></h3>
+    <duration-input
+      id="d8"
+      legend="Themed via ::part()"
+      value="PT45M"
+    ></duration-input>
+
+    <style>
+      #d8::part(fieldset) {
+        border: 2px dashed orange;
+        border-radius: 4px;
+      }
+      #d8::part(legend) {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+      }
+      #d8::part(input) {
+        border-radius: 999px;
+        text-align: center;
+      }
+      /* target a single field */
+      #d8::part(input-second) {
+        border-color: orange;
+      }
+    </style>
+
+    <pre><code>&lt;style&gt;
+  /* ::part() — reach into specific shadow elements */
+  duration-input::part(fieldset) {
+    border: 2px dashed orange;
+    border-radius: 4px;
+  }
+  duration-input::part(legend) {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+  }
+  /* target all fields */
+  duration-input::part(input) {
+    border-radius: 999px;
+    text-align: center;
+  }
+  /* target a single field */
+  duration-input::part(input-second) {
+    border-color: orange;
+  }
+&lt;/style&gt;</code></pre>
+
+    <script>
+      for (const [inputId, outputId] of [
+        ["d1", "out1"],
+        ["d2", "out2"],
+      ]) {
+        const el = document.getElementById(inputId);
+        const out = document.getElementById(outputId);
+        const render = () => (out.textContent = el.value);
+        render();
+        el.addEventListener("input", render);
+      }
+
+      const d3 = document.getElementById("d3");
+      const out3 = document.getElementById("out3");
+      document.getElementById("check").addEventListener("click", () => {
+        const ok = d3.checkValidity();
+        out3.textContent = ok
+          ? "valid ✅"
+          : `invalid ❌ — ${d3.validationMessage}`;
+      });
+      document.getElementById("report").addEventListener("click", () => {
+        d3.reportValidity(); // also focuses/flags the offending field
+      });
+
+      document
+        .getElementById("toggle-parent-lang")
+        .addEventListener("click", (e) => {
+          const wrapper = document.getElementById("d5").parentElement;
+          const next = wrapper.getAttribute("lang") === "de" ? "es" : "de";
+          wrapper.setAttribute("lang", next);
+          e.target.textContent = `Parent lang is now "${next}" — labels updated live`;
+        });
+    </script>
+
+    <h2>Third Party Library Support</h2>
+    <h3>Tailwind CSS</h3>
+    <iframe
+      sandbox="allow-scripts"
+      srcdoc='
+    <script src="../src/DurationInput/DurationInput.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <duration-input
+      legend="Themed via Tailwind"
+      value="P1WT2H"
+      class="mx-auto max-w-md [&::part(fieldset)]:border-2 [&::part(fieldset)]:border-indigo-700 [&::part(fieldset)]:rounded-2xl [&::part(fieldset)]:shadow-lg [&::part(legend)]:uppercase [&::part(legend)]:tracking-wide [&::part(legend)]:text-xs [&::part(input)]:rounded-full [&::part(input)]:text-center [&::part(input-second)]:ring-2 [&::part(input-second)]:ring-amber-400"
+    ></duration-input>'
+    ></iframe>
+    <pre><code>&lt;duration-input
+  legend="Themed via Tailwind"
+  value="P1WT2H"
+  class="mx-auto max-w-md [&::part(fieldset)]:border-2 [&::part(fieldset)]:border-indigo-700 [&::part(fieldset)]:rounded-2xl [&::part(fieldset)]:shadow-lg [&::part(legend)]:uppercase [&::part(legend)]:tracking-wide [&::part(legend)]:text-xs [&::part(input)]:rounded-full [&::part(input)]:text-center [&::part(input-second)]:ring-2 [&::part(input-second)]:ring-amber-400"
+&gt;&lt;/duration-input&gt;</code></pre>
+
+    <h3>Alpine.js</h3>
+    <iframe
+      sandbox="allow-scripts"
+      srcdoc='
+      <script src="../src/DurationInput/DurationInput.js"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      <div x-data="formManager()">
+        <duration-input
+          legend="Managed via Alpine"
+          x-model="inputData"
+        ></duration-input>
+        <p>Current value: <samp x-text="inputData"></samp></p>
+      </div>
+      <script>
+        function formManager() {
+          return {
+            inputData: "P1M1DT1H1M"
+          }
+        }
+      </script>'
+    ></iframe>
+    <pre><code>&lt;div x-data="formManager()"&gt;
+  &lt;duration-input
+    legend="Managed via Tailwind"
+    x-model="inputData"
+  &gt;&lt;/duration-input&gt;
+&lt;/div&gt;
+&lt;script&gt;
+  function formManager() {
+    return {
+      inputData: "P1M1DT1H1M"
+    }
+  }
+&lt;/script&gt;</code></pre>
+  </body>
+</html>
