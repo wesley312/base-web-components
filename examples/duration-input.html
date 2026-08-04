@@ -48,11 +48,28 @@
         <code>legend</code>: Set the content of legend, default to
         <em>Duration</em>, only text is supported.
       </li>
+      <li>
+        <code>largest-unit</code>: Set the largest input unit to be shown, any
+        input with unit larger than this will be hidden, default to
+        <code>year</code>. The options are: <code>year</code>,
+        <code>month</code>, <code>week</code>, <code>day</code>,
+        <code>hour</code>, <code>minute</code> <code>second</code>.
+      </li>
+      <li>
+        <code>smallest-unit</code>: Set the smallest input unit to be shown, any
+        input with unit smaller than this will be hidden, default to
+        <code>second</code>. The smallest unit will have attribute
+        <code>step="any"</code>. The options are: <code>year</code>,
+        <code>month</code>, <code>week</code>, <code>day</code>,
+        <code>hour</code>, <code>minute</code> <code>second</code>.
+      </li>
     </ul>
     <duration-input
       id="d2"
-      value="P1Y2M3DT4H5M6.7S"
+      value="PT4H5.5M"
       legend="Reminder repeats every"
+      largest-unit="day"
+      smallest-unit="minute"
     ></duration-input>
     <p>Current value: <samp id="out2"></samp></p>
 

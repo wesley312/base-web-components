@@ -61,11 +61,14 @@ class DurationInput extends HTMLElement {
     "lang",
     "labels",
     "dir",
+    "largest-unit",
+    "smallest-unit",
   ];
 
   #internals;
   #fields;
   #labelEls;
+  #labelWraps;
   #langObserver; // watches ancestor lang/dir attributes so inherited locale changes are picked up
   #lastInferredDir = null; // the dir value we last set ourselves, so we can tell it apart from one user set
   #settingDir = false; // guards against our own setAttribute('dir', ...) re-triggering itself
@@ -117,6 +120,7 @@ class DurationInput extends HTMLElement {
 
     this.#fields = {};
     this.#labelEls = {};
+    this.#labelWraps = {};
     for (const unit of UNITS) {
       this.#fields[unit] = root.querySelector(
         `label[data-unit="${unit}"] input`,
@@ -124,11 +128,13 @@ class DurationInput extends HTMLElement {
       this.#labelEls[unit] = root.querySelector(
         `label[data-unit="${unit}"] [data-label]`,
       );
+      this.#labelWraps[unit] = root.querySelector(`label[data-unit="${unit}"]`);
       this.#fields[unit].addEventListener("input", () => this.#onFieldInput());
     }
   }
 
   connectedCallback() {
+    this.#updateUnitRange();
     this.#applyValue(
       this.hasAttribute("value") ? this.getAttribute("value") : null,
     );
@@ -284,6 +290,63 @@ class DurationInput extends HTMLElement {
   }
   set required(v) {
     this.toggleAttribute("required", Boolean(v));
+  }
+
+  /** Largest visible unit, e.g. "month" hides year. Must be one of UNITS, or unset for no cap. */
+  get largestUnit() {
+    return this.getAttribute("largest-unit");
+  }
+  set largestUnit(v) {
+    v
+      ? this.setAttribute("largest-unit", v)
+      : this.removeAttribute("largest-unit");
+  }
+
+  /** Smallest visible unit, e.g. "minute" hides second. Must be one of UNITS, or unset for no cap. */
+  get smallestUnit() {
+    return this.getAttribute("smallest-unit");
+  }
+  set smallestUnit(v) {
+    v
+      ? this.setAttribute("smallest-unit", v)
+      : this.removeAttribute("smallest-unit");
+  }
+
+  /**
+   * Hides units outside the [largestUnit, smallestUnit] range, and moves
+   * `step="any"` onto whichever unit ends up being the smallest *visible*
+   * one.
+   *
+   * Invalid combinations (unknown unit name, or largest ordered after
+   * smallest, e.g. largest-unit="day" smallest-unit="month") are ignored
+   * with a console warning; the full range is shown as a safe fallback.
+   */
+  #updateUnitRange() {
+    const largestAttr = this.largestUnit;
+    const smallestAttr = this.smallestUnit;
+    // UNITS are in reverse order from largest unit to smallest unit
+    let lo = largestAttr ? UNITS.indexOf(largestAttr) : 0;
+    let hi = smallestAttr ? UNITS.indexOf(smallestAttr) : UNITS.length - 1;
+
+    const invalid =
+      (largestAttr && lo === -1) || (smallestAttr && hi === -1) || lo > hi;
+    if (invalid) {
+      console.warn(
+        `<duration-input>: ignoring largest-unit="${largestAttr}" smallest-unit="${smallestAttr}" ` +
+          `(must both be one of ${UNITS.join(", ")}, with largest-unit no smaller than smallest-unit).`,
+      );
+      lo = 0;
+      hi = UNITS.length - 1;
+    }
+
+    UNITS.forEach((unit, i) => {
+      const visible = i >= lo && i <= hi;
+      const input = this.#fields[unit];
+      this.#labelWraps[unit].hidden = !visible;
+      input.disabled = !visible;
+      if (!visible) input.value = ""; // don't let a hidden field silently contribute to the value
+      input.step = visible && i === hi ? "any" : "1";
+    });
   }
 
   /** Manual label overrides, e.g. {"year":"yr","month":"mo"}. Merges over the Intl-derived defaults. */
