@@ -1,16 +1,45 @@
 /**
- * <duration-input>
+ * @file A custom input element that edits an ISO 8601 duration (PnYnMnDTnHnMnS) through separate numeric fields.
  *
- * Attributes:
- *   value  - ISO 8601 duration string, e.g. "P1Y2M3DT4H5M6S". Reflects live.
- *   legend - text shown in the <legend>. Defaults to "Duration".
+ * @element duration-input
+ * @version 0.1.0
  *
- * Properties:
- *   .value (string, get/set) - same as the attribute.
+ * @attribute {string} value - ISO 8601 duration string, e.g. "P1Y2M3DT4H5M6S". Reflects live.
+ * @attribute {string} legend - text shown in the <legend>, will override slot legend. Defaults to "Duration".
  *
- * Events:
- *   'input'  - fired on every keystroke/change to any field.
- *   'change' - fired alongside 'input' (mirrors native form control behavior).
+ * @slot legend - legend of the input
+ *
+ * @property {string} value - same as the attribute.
+ *
+ * @fires input - fired on every keystroke/change to any field.
+ * @fires change - fired alongside 'input' (mirrors native form control behavior).
+ *
+ * @cssPart fieldset - fieldset (main container) of the element
+ * @cssPart legend - legend of the element
+ * @cssPart label - all labels of the element, each input wrap inside its label
+ * @cssPart label-year - label of year input
+ * @cssPart label-month - label of month input
+ * @cssPart label-week - label of week input
+ * @cssPart label-day - label of day input
+ * @cssPart label-hour - label of hour input
+ * @cssPart label-minute - label of minute input
+ * @cssPart label-second - label of second input
+ * @cssPart input - all inputs of the element
+ * @cssPart input-year - input of year input
+ * @cssPart input-month - input of month input
+ * @cssPart input-week - input of week input
+ * @cssPart input-day - input of day input
+ * @cssPart input-hour - input of hour input
+ * @cssPart input-minute - input of minute input
+ * @cssPart input-second - input of second input
+ * @cssPart unit - all labels text of the element, each text wrap inside <span>
+ * @cssPart unit-year - label text of year input
+ * @cssPart unit-month - label text of month input
+ * @cssPart unit-week - label text of week input
+ * @cssPart unit-day - label text of day input
+ * @cssPart unit-hour - label text of hour input
+ * @cssPart unit-minute - label text of minute input
+ * @cssPart unit-second - label text of second input
  *
  * Notes:
  *   - The "week" field is a convenience for the user. Since ISO 8601 does not

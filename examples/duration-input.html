@@ -46,7 +46,9 @@
       </li>
       <li>
         <code>legend</code>: Set the content of legend, default to
-        <em>Duration</em>, only text is supported.
+        <em>Duration</em>, only text is supported. Use slot
+        <code>legend</code> if more customization needed. By setting this
+        attribute, any customization in slot will be overridden.
       </li>
       <li>
         <code>largest-unit</code>: Set the largest input unit to be shown, any
@@ -72,6 +74,20 @@
       smallest-unit="minute"
     ></duration-input>
     <p>Current value: <samp id="out2"></samp></p>
+    <pre><code>&lt;duration-input
+  value="PT4H5.5M"
+  legend="Reminder repeats every"
+  largest-unit="day"
+  smallest-unit="minute"
+&gt;&lt;/duration-input&gt;</code></pre>
+
+    <duration-input>
+      <div slot="legend"><strong>Custom</strong> <em>legend</em></div>
+    </duration-input>
+    <pre><code>&lt;!-- legend attribute should not be set when using slot --&gt;
+&lt;duration-input&gt;
+  &lt;div slot="legend"&gt;&lt;strong&gt;Custom&lt;/strong&gt; &lt;em&gt;legend&lt;/em&gt;&lt;/div&gt;
+&lt;/duration-input&gt;</code></pre>
 
     <h3>Input Validation</h3>
     <p>
