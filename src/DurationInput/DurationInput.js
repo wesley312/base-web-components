@@ -2,7 +2,7 @@
  * @file A custom input element that edits an ISO 8601 duration (PnYnMnDTnHnMnS) through separate numeric fields.
  *
  * @element duration-input
- * @version 0.1.0
+ * @version 0.1.1
  *
  * @attribute {string} value - ISO 8601 duration string, e.g. "P1Y2M3DT4H5M6S". Reflects live.
  * @attribute {string} legend - text shown in the <legend>, will override slot legend. Defaults to "Duration".
@@ -95,12 +95,11 @@ class DurationInput extends HTMLElement {
   ];
 
   #internals;
+  #fieldsetEl;
   #fields;
   #labelEls;
   #labelWraps;
   #langObserver; // watches ancestor lang/dir attributes so inherited locale changes are picked up
-  #lastInferredDir = null; // the dir value we last set ourselves, so we can tell it apart from one user set
-  #settingDir = false; // guards against our own setAttribute('dir', ...) re-triggering itself
   #suppress = false; // guards against feedback loops while syncing UI <-> attribute
 
   constructor() {
@@ -147,6 +146,7 @@ class DurationInput extends HTMLElement {
       </fieldset>
     `;
 
+    this.#fieldsetEl = root.querySelector("fieldset");
     this.#fields = {};
     this.#labelEls = {};
     this.#labelWraps = {};
@@ -215,35 +215,25 @@ class DurationInput extends HTMLElement {
 
   /**
    * Text direction (RTL/LTR) does not follow from `lang` automatically in
-   * browsers — <duration-input lang="ar"> stays LTR unless `dir` is also
-   * set somewhere. So: if this element or an ancestor already has an
-   * explicit `dir`, leave it alone and let normal CSS inheritance handle it.
-   * Otherwise, infer direction from the resolved locale and set `dir` on
-   * this element ourselves, so the grid, legend, and labels all mirror
-   * correctly for RTL languages.
+   * browsers if not explicitly set. The inferred direction is applied to our
+   * own internal <fieldset> inside the shadow root instead. That's invisible
+   * outside the shadow tree, and functionally identical: the fieldset is the
+   * direct parent of every field, so setting `direction` there mirrors the grid,
+   * legend, and labels exactly as setting it on the host would have.
    */
   #updateDirection() {
-    const ownDir = this.hasAttribute("dir") ? this.getAttribute("dir") : null;
-    const isExplicit = ownDir !== null && ownDir !== this.#lastInferredDir;
-    if (isExplicit) return; // an outside actor set this dir — never touch it
-
-    const ancestorDir = this.parentElement?.closest("[dir]");
-    if (ancestorDir) {
-      // An explicit ancestor dir cascades in via normal CSS inheritance;
-      // clear anything we inferred previously so it isn't shadowed.
-      if (ownDir !== null) this.#setInferredDir(null);
+    const hasExplicitDir =
+      this.hasAttribute("dir") || Boolean(this.parentElement?.closest("[dir]"));
+    if (hasExplicitDir) {
+      this.#setInferredDir(null); // let inheritance carry the explicit value in; clear any prior override
       return;
     }
-
     this.#setInferredDir(DurationInput.resolveDirection(this.#resolveLocale()));
   }
 
   #setInferredDir(dir) {
-    this.#settingDir = true;
-    if (dir) this.setAttribute("dir", dir);
-    else this.removeAttribute("dir");
-    this.#lastInferredDir = dir; // remember exactly what we set, to recognize it as "ours" later
-    this.#settingDir = false;
+    if (dir) this.#fieldsetEl.setAttribute("dir", dir);
+    else this.#fieldsetEl.removeAttribute("dir");
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
@@ -266,7 +256,7 @@ class DurationInput extends HTMLElement {
       // the live attribute value directly, so it will correctly recognize
       // this as explicit (leave it) or, if it was just removed, resume
       // auto-detection — no bookkeeping needed here.
-      if (!this.#settingDir) this.#updateDirection();
+      this.#updateDirection();
     }
   }
 
