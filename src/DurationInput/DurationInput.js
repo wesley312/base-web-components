@@ -2,10 +2,20 @@
  * @file A custom input element that edits an ISO 8601 duration (PnYnMnDTnHnMnS) through separate numeric fields.
  *
  * @element duration-input
- * @version 0.1.1
+ * @version 0.1.2
  *
  * @attribute {string} value - ISO 8601 duration string, e.g. "P1Y2M3DT4H5M6S". Reflects live.
- * @attribute {string} legend - text shown in the <legend>, will override slot legend. Defaults to "Duration".
+ * @attribute {string} legend - text shown in the <legend>, will override slot
+ *   `legend`. Defaults to "Duration".
+ * @attribute {boolean} required - similar as required attribute of input, except only
+ *   one of the unit input is required.
+ * @attribute {string} labels - JSON string of unit as the key and text label of
+ *   the unit as value, long form of the unit in current language will be used if
+ *   not given explicitly
+ * @attribute {string} largest-unit - largest unit to be shown, default "year",
+ *   no effect when largest-unit is smaller than smallest-unit
+ * @attribute {string} smallest-unit - smallest unit to be shown, default "second",
+ *   no effect when largest-unit is smaller than smallest-unit
  *
  * @slot legend - legend of the input
  *
@@ -257,6 +267,9 @@ class DurationInput extends HTMLElement {
       // this as explicit (leave it) or, if it was just removed, resume
       // auto-detection — no bookkeeping needed here.
       this.#updateDirection();
+    } else if (name === "largest-unit" || name === "smallest-unit") {
+      this.#updateUnitRange();
+      this.#updateValidity(); // hidden fields no longer count toward `required`
     }
   }
 
